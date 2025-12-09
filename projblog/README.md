@@ -134,5 +134,24 @@ func Login(c *gin.Context) {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
         return
     }
-    // 剩下的逻辑...
 }
+
+//测试 使用https://app.apifox.com 
+1. 创建一个用户 
+http://127.0.0.1:8080/user/register
+{
+  "username": "test_user1",
+  "password": "123456",
+  "email": "test1@example.com"
+}
+
+测试ok
+后续待完善
+1.修复数据库多次连接问题
+2.测试剩下的模块
+3.修复报错
+2025/12/10 00:36:44 D:/code/Go/项目任务练习/task3/projblog/services/userService.go:31 record not found
+[0.000ms] [rows:0] SELECT * FROM `users` WHERE username = 'test_user1' ORDER BY `users`.`id` LIMIT 1
+
+2025/12/10 00:36:44 D:/code/Go/项目任务练习/task3/projblog/services/userService.go:36 record not found
+[0.511ms] [rows:0] SELECT * FROM `users` WHERE email = 'test1@example.com' ORDER BY `users`.`id` LIMIT 1

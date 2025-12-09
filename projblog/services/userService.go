@@ -16,7 +16,7 @@ type UserService struct {
 var TokenMap = make(map[string]string)
 
 // 注册
-func (s *UserService) Register(user *models.Users) (bool, string) {
+func (s UserService) Register(user models.Users) (bool, string) {
 
 	// 加密密码
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
@@ -38,7 +38,7 @@ func (s *UserService) Register(user *models.Users) (bool, string) {
 		return false, "邮箱已存在"
 
 	}
-	if err := db.Create(user).Error; err != nil {
+	if err := db.Create(&user).Error; err != nil {
 		fmt.Println("err create user", err)
 		return false, "create user error"
 	}
@@ -48,15 +48,13 @@ func (s *UserService) Register(user *models.Users) (bool, string) {
 
 // 登录
 func (s UserService) Login(username, password string) (bool, string) {
-	var user models.Users
-	db := utils.DBUtil{}.Connect()
-	db.Where("username = ?", username).Find(&user)
 
+	db := utils.DBUtil{}.Connect()
 	var storedUser models.Users
-	if err := db.Where("username = ?", user.Username).First(&storedUser).Error; err != nil {
-		fmt.Println("err find user", err)
+	if err := db.Where("username = ?", username).First(&storedUser).Error; err != nil {
 		return false, "用户不存在"
 	}
+
 	if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(password)); err != nil {
 		fmt.Println("err compare password", err)
 		return false, "密码错误"
@@ -68,7 +66,7 @@ func (s UserService) Login(username, password string) (bool, string) {
 		"email":    storedUser.Email,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	})
-	tokenString, err := token.SignedString([]byte("abcdefghijklmnopqr"))
+	tokenString, err := token.SignedString([]byte("abcdefghijklmnopq"))
 	if err != nil {
 		fmt.Println("err generate token", err)
 		return false, "生成token失败"
@@ -79,7 +77,7 @@ func (s UserService) Login(username, password string) (bool, string) {
 }
 
 // paraseToken 解析token
-func (s UserService) paraseToken(tokenString string) (bool, models.Users) {
+func (s UserService) ParaseToken(tokenString string) (bool, models.Users) {
 	var user models.Users
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte("abcdefghijklmnopq"), nil
@@ -106,9 +104,9 @@ func (s UserService) paraseToken(tokenString string) (bool, models.Users) {
 }
 
 // 用户登出
-func (s UserService) Logout(tokenString string) (bool,error {
-	
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{},error) {
+func (s UserService) Logout(tokenString string) (bool, error) {
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte("abcdefghijklmnopq"), nil
 	})
 	if err != nil {

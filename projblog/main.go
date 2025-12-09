@@ -1,8 +1,9 @@
 package main
 
 import (
-	"BLOG/models"
+	"BLOG/controller"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -16,8 +17,13 @@ func main() {
 		panic("连接数据库失败: " + err.Error())
 	}
 
-	db.AutoMigrate(&models.Users{}, &models.Posts{}, &models.Comments{}, models.Token{})
+	//db.AutoMigrate(&models.Users{}, &models.Posts{}, &models.Comments{}, models.Token{})
 	_ = db
+	r := gin.Default()
+	controller.UserControllerInit(r)
+	controller.PostControllerInit(r)
+	controller.CommentControllerInit(r)
+	r.Run(":8080")
 	//defer db.Close()
 
 }
